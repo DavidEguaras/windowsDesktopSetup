@@ -1,20 +1,20 @@
 ﻿<#
 .SYNOPSIS
-    Restaura mi escritorio de Windows 11: YASB, Windhawk (mods + ajustes),
-    cursores macOS Tahoe, fuentes y wallpapers.
+    Restores my Windows 11 desktop: YASB, Windhawk (mods + settings),
+    macOS Tahoe cursors, fonts and wallpapers.
 
 .DESCRIPTION
-    Ejecutar desde la raiz del repositorio en PowerShell:
+    Run from the repository root in PowerShell:
         Set-ExecutionPolicy -Scope Process Bypass -Force
         .\install.ps1
 
-    Se relanza como administrador si hace falta (Windhawk guarda sus mods
-    en HKLM y ProgramData). Todo lo que sobrescribe se copia antes a
-    %USERPROFILE%\windowsDesktop-setup-backup\<fecha>.
+    Relaunches itself as administrator if needed (Windhawk stores its mods
+    in HKLM and ProgramData). Everything it overwrites is first copied to
+    %USERPROFILE%\windowsDesktop-setup-backup\<date>.
 
 .PARAMETER Skip
-    Pasos a omitir: apps, fonts, yasb, windhawk, cursors, wallpapers, theme
-    Ej: .\install.ps1 -Skip apps,wallpapers
+    Steps to skip: apps, fonts, yasb, windhawk, cursors, wallpapers, theme
+    E.g.: .\install.ps1 -Skip apps,wallpapers
 #>
 [CmdletBinding()]
 param(
@@ -28,11 +28,11 @@ $WallpapersRepo = 'https://github.com/DavidEguaras/wallpapers.git'
 $WallpaperFile = 'a_colorful_mask_on_a_black_background.jpg'
 $Backup = Join-Path $env:USERPROFILE ("windowsDesktop-setup-backup\" + (Get-Date -Format 'yyyyMMdd-HHmmss'))
 
-# --- Elevacion ---------------------------------------------------------------
+# --- Elevation ---------------------------------------------------------------
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
     [Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $isAdmin) {
-    Write-Host 'Relanzando como administrador...' -ForegroundColor Yellow
+    Write-Host 'Relaunching as administrator...' -ForegroundColor Yellow
     $argList = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSCommandPath`"")
     if ($Skip) { $argList += @('-Skip', ($Skip -join ',')) }
     Start-Process powershell.exe -Verb RunAs -ArgumentList $argList
@@ -68,11 +68,11 @@ public static class DesktopNative {
 }
 '@
 
-# --- 1. Aplicaciones ---------------------------------------------------------
+# --- 1. Apps ----------------------------------------------------------------
 if ('apps' -notin $Skip) {
-    Step 'Instalando aplicaciones (winget)'
+    Step 'Installing apps (winget)'
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
-        throw 'winget no esta disponible. Instala "App Installer" desde Microsoft Store.'
+        throw 'winget is not available. Install "App Installer" from the Microsoft Store.'
     }
     foreach ($id in 'AmN.yasb', 'RamenSoftware.Windhawk', 'Git.Git') {
         Info "winget install $id"
@@ -81,9 +81,9 @@ if ('apps' -notin $Skip) {
     Refresh-Path
 }
 
-# --- 2. Fuentes --------------------------------------------------------------
+# --- 2. Fonts ----------------------------------------------------------------
 if ('fonts' -notin $Skip) {
-    Step 'Instalando fuentes (Figtree + JetBrainsMono Nerd Font)'
+    Step 'Installing fonts (Figtree + JetBrainsMono Nerd Font)'
     $fontDir = Join-Path $env:LOCALAPPDATA 'Microsoft\Windows\Fonts'
     $fontReg = 'HKCU:\Software\Microsoft\Windows NT\CurrentVersion\Fonts'
     New-Item -ItemType Directory -Force -Path $fontDir | Out-Null
@@ -97,7 +97,7 @@ if ('fonts' -notin $Skip) {
     }
 
     Get-ChildItem (Join-Path $Repo 'fonts\figtree') -Filter *.ttf | ForEach-Object { Install-Font $_ }
-    Info 'Figtree instalada'
+    Info 'Figtree installed'
 
     $tmp = Join-Path $env:TEMP 'jbmono-nf'
     Remove-Item $tmp -Recurse -Force -ErrorAction SilentlyContinue
@@ -107,32 +107,32 @@ if ('fonts' -notin $Skip) {
     Expand-Archive $zip -DestinationPath $tmp -Force
     Get-ChildItem $tmp -Filter 'JetBrainsMono*NerdFont*.ttf' | ForEach-Object { Install-Font $_ }
     Remove-Item $tmp -Recurse -Force
-    Info 'JetBrainsMono Nerd Font instalada'
+    Info 'JetBrainsMono Nerd Font installed'
 }
 
 # --- 3. YASB -----------------------------------------------------------------
 if ('yasb' -notin $Skip) {
-    Step 'Configurando YASB'
+    Step 'Configuring YASB'
     $yasbDir = Join-Path $env:USERPROFILE '.config\yasb'
     Backup-Path $yasbDir 'yasb'
     Get-Process yasb -ErrorAction SilentlyContinue | Stop-Process -Force
     New-Item -ItemType Directory -Force -Path $yasbDir | Out-Null
     Copy-Item (Join-Path $Repo 'yasb\config.yaml'), (Join-Path $Repo 'yasb\styles.css') $yasbDir -Force
-    Info "Config copiada a $yasbDir"
+    Info "Config copied to $yasbDir"
 
     $yasbExe = 'C:\Program Files\YASB\yasb.exe'
     if (Test-Path $yasbExe) {
         Set-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run' -Name 'YASB' -Value $yasbExe
-        Info 'YASB se iniciara con Windows'
+        Info 'YASB will start with Windows'
     }
 }
 
 # --- 4. Windhawk -------------------------------------------------------------
 if ('windhawk' -notin $Skip) {
-    Step 'Restaurando mods de Windhawk'
+    Step 'Restoring Windhawk mods'
     $whData = 'C:\ProgramData\Windhawk'
     $whExe = 'C:\Program Files\Windhawk\windhawk.exe'
-    if (-not (Test-Path $whExe)) { throw 'Windhawk no esta instalado (ejecuta sin -Skip apps).' }
+    if (-not (Test-Path $whExe)) { throw 'Windhawk is not installed (run without -Skip apps).' }
 
     Backup-Path (Join-Path $whData 'ModsSource') 'windhawk\ModsSource'
     Reg-Run @('export', 'HKLM\SOFTWARE\Windhawk\Engine\Mods', "`"$(Join-Path $Backup 'windhawk-mods-before.reg')`"", '/y') | Out-Null
@@ -150,16 +150,16 @@ if ('windhawk' -notin $Skip) {
         Copy-Item (Join-Path $Repo "windhawk\compiled\$arch\*") $dst -Force
     }
 
-    if ((Reg-Run @('import', "`"$(Join-Path $Repo 'windhawk\mods.reg')`"")) -ne 0) { throw 'No se pudo importar windhawk\mods.reg' }
-    Info 'Mods, ajustes y binarios compilados restaurados'
+    if ((Reg-Run @('import', "`"$(Join-Path $Repo 'windhawk\mods.reg')`"")) -ne 0) { throw 'Could not import windhawk\mods.reg' }
+    Info 'Mods, settings and compiled binaries restored'
 
     Start-Process $whExe
-    Info 'Windhawk reiniciado (si algun mod no carga, abre Windhawk y pulsa "Compile")'
+    Info 'Windhawk restarted (if a mod does not load, open Windhawk and click "Compile")'
 }
 
-# --- 5. Cursores -------------------------------------------------------------
+# --- 5. Cursors --------------------------------------------------------------
 if ('cursors' -notin $Skip) {
-    Step 'Aplicando cursores macOS Tahoe'
+    Step 'Applying macOS Tahoe cursors'
     $curDir = Join-Path $env:LOCALAPPDATA 'Cursors\macOS-Tahoe'
     New-Item -ItemType Directory -Force -Path $curDir | Out-Null
     Copy-Item (Join-Path $Repo 'cursors\macos-tahoe\*') $curDir -Force
@@ -185,55 +185,55 @@ if ('cursors' -notin $Skip) {
     Set-ItemProperty $schemes -Name 'macOS Tahoe' -Value (($order | ForEach-Object { Join-Path $curDir $map[$_] }) -join ',')
 
     [DesktopNative]::SystemParametersInfo(0x0057, 0, $null, 0x03) | Out-Null   # SPI_SETCURSORS
-    Info 'Cursores aplicados'
+    Info 'Cursors applied'
 }
 
 # --- 6. Wallpapers -----------------------------------------------------------
 if ('wallpapers' -notin $Skip) {
-    $resp = Read-Host "`n¿Quieres descargar la carpeta de wallpapers en Imagenes\wallpapers? [S/n]"
+    $resp = Read-Host "`nDo you want to download the wallpapers folder into Pictures\wallpapers? [Y/n]"
     if ($resp -match '^\s*(n|no)\s*$') {
         $Skip += 'wallpapers'
-        Info 'Wallpapers omitidos'
+        Info 'Wallpapers skipped'
     }
 }
 if ('wallpapers' -notin $Skip) {
-    Step 'Descargando wallpapers'
+    Step 'Downloading wallpapers'
     Refresh-Path
     $wpDir = Join-Path ([Environment]::GetFolderPath('MyPictures')) 'wallpapers'
     if (Test-Path (Join-Path $wpDir '.git')) {
         git -C $wpDir pull --ff-only
     } elseif (Test-Path $wpDir) {
-        Info "$wpDir ya existe y no es un repo git; se deja como esta"
+        Info "$wpDir already exists and is not a git repo; leaving it as is"
     } else {
         git clone --depth 1 $WallpapersRepo $wpDir
     }
 
     $wp = Join-Path $wpDir $WallpaperFile
     if (Test-Path $wp) {
-        Set-ItemProperty 'HKCU:\Control Panel\Desktop' -Name WallpaperStyle -Value '10'   # Rellenar
+        Set-ItemProperty 'HKCU:\Control Panel\Desktop' -Name WallpaperStyle -Value '10'   # Fill
         Set-ItemProperty 'HKCU:\Control Panel\Desktop' -Name TileWallpaper -Value '0'
         [DesktopNative]::SystemParametersInfo(0x0014, 0, $wp, 0x03) | Out-Null    # SPI_SETDESKWALLPAPER
-        Info "Fondo aplicado: $WallpaperFile"
+        Info "Wallpaper applied: $WallpaperFile"
     } else {
-        Info "No se encontro $WallpaperFile en el repo de wallpapers"
+        Info "$WallpaperFile not found in the wallpapers repo"
     }
 }
 
-# --- 7. Tema -----------------------------------------------------------------
+# --- 7. Theme ----------------------------------------------------------------
 if ('theme' -notin $Skip) {
-    Step 'Modo oscuro + transparencia'
+    Step 'Dark mode + transparency'
     $p = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize'
     Set-ItemProperty $p -Name AppsUseLightTheme -Value 0 -Type DWord
     Set-ItemProperty $p -Name SystemUsesLightTheme -Value 0 -Type DWord
     Set-ItemProperty $p -Name EnableTransparency -Value 1 -Type DWord
 }
 
-# --- Arranque ----------------------------------------------------------------
+# --- Startup -----------------------------------------------------------------
 if ('yasb' -notin $Skip -and (Test-Path 'C:\Program Files\YASB\yasb.exe')) {
-    Step 'Iniciando YASB'
-    # Se lanza a traves de explorer para que no herede la elevacion de este script
+    Step 'Starting YASB'
+    # Launched through explorer so it does not inherit this script's elevation
     Start-Process explorer.exe 'C:\Program Files\YASB\yasb.exe'
 }
 
-Write-Host "`nListo. Backups en: $Backup" -ForegroundColor Green
-Write-Host 'Cierra sesion y vuelve a entrar si algun cambio (cursores, tema) no se ve del todo.'
+Write-Host "`nDone. Backups in: $Backup" -ForegroundColor Green
+Write-Host 'Sign out and back in if some changes (cursors, theme) do not fully show up.'
