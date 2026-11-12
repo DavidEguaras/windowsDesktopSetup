@@ -1,4 +1,4 @@
-# windowsDesktop setup
+# windowsDesktopSetup
 
 My Windows 11 desktop, reproducible with a single script: a macOS-style top bar with **YASB**, a taskbar / Start menu / notification center restyled with **Windhawk**, **macOS Tahoe** cursors, fonts and wallpapers.
 
@@ -19,13 +19,13 @@ The top bar is YASB: Start button on the left, clock in the center and, on the r
 ## Installation
 
 ```powershell
-git clone https://github.com/DavidEguaras/windowsDesktop-setup.git
-cd windowsDesktop-setup
+git clone https://github.com/DavidEguaras/windowsDesktopSetup.git
+cd windowsDesktopSetup
 Set-ExecutionPolicy -Scope Process Bypass -Force
 .\install.ps1
 ```
 
-The script relaunches itself as administrator (Windhawk stores its mods in `HKLM` and `ProgramData`). Before overwriting anything, it makes a backup in `%USERPROFILE%\windowsDesktop-setup-backup\<date>`.
+The script relaunches itself as administrator (Windhawk stores its mods in `HKLM` and `ProgramData`). Before overwriting anything, it makes a backup in `%USERPROFILE%\windowsDesktopSetup-backup\<date>`.
 
 During installation it asks whether you want to download the wallpapers folder.
 

@@ -10,7 +10,7 @@
 
     Relaunches itself as administrator if needed (Windhawk stores its mods
     in HKLM and ProgramData). Everything it overwrites is first copied to
-    %USERPROFILE%\windowsDesktop-setup-backup\<date>.
+    %USERPROFILE%\windowsDesktopSetup-backup\<date>.
 
 .PARAMETER Skip
     Steps to skip: apps, fonts, yasb, windhawk, cursors, wallpapers, theme
@@ -26,7 +26,7 @@ $ErrorActionPreference = 'Stop'
 $Repo = $PSScriptRoot
 $WallpapersRepo = 'https://github.com/DavidEguaras/wallpapers.git'
 $WallpaperFile = 'a_colorful_mask_on_a_black_background.jpg'
-$Backup = Join-Path $env:USERPROFILE ("windowsDesktop-setup-backup\" + (Get-Date -Format 'yyyyMMdd-HHmmss'))
+$Backup = Join-Path $env:USERPROFILE ("windowsDesktopSetup-backup\" + (Get-Date -Format 'yyyyMMdd-HHmmss'))
 
 # --- Elevation ---------------------------------------------------------------
 $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
