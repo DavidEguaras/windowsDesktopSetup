@@ -6,13 +6,15 @@ Mi escritorio de Windows 11, reproducible con un solo script: barra superior est
 
 ## Capturas
 
-| Barra | Media |
+| Menú inicio (Windhawk) | Selector de salida de audio (YASB) |
 |---|---|
-| ![Barra](screenshots/barra.png) | ![Media](screenshots/media.png) |
+| ![Menú inicio](screenshots/inicio.png) | ![Volumen](screenshots/volumen.png) |
 
-| Volumen | Menú inicio |
+| Widget de media (YASB) | Con otro fondo |
 |---|---|
-| ![Volumen](screenshots/volumen.png) | ![Menú inicio](screenshots/inicio.png) |
+| ![Media](screenshots/media.png) | ![Otro fondo](screenshots/otro-fondo.png) |
+
+La barra superior es YASB: botón de inicio a la izquierda, reloj en el centro y, a la derecha, bandeja del sistema, uso de MEM/CPU, idioma de teclado, canción en reproducción, volumen, notificaciones y menú de apagado. Abajo, la barra de tareas de Windows centrada y flotante gracias a los mods de Windhawk.
 
 ## Instalación
 
